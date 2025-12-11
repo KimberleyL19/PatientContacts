@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Page</title>
+    <link rel="stylesheet" href="Contacts.css">
+</head>
+<body>
+<script src="Contacts.js" defer></script>
+<h1 id="heading">Contact Details</h1>
+<ul>
+    <li>
+        <label>Firstname:<input type="text" id="fname"></label>
+    </li>
+    <br>
+    <br>
+    <li>
+        <label>Lastname: <input type="text" id="lname"></label>
+    </li>
+    <br>
+    <br>
+    <li>
+        <label>Phone Number:<input type="text" id="number"></label>
+    </li>
+    <br>
+    <br>
+    <li id="email-li">
+        <label>
+        Email Address: <input
+            type="email"
+            id="email"
+            class="email-class"
+            name="email"
+            placeholder="example@domain.com"
+            required/>
+        </label>
+    </li>  <!--Need to have option to add another email-->
+    <br>
+    <br>
+    <button id="email2">Add additional Email Address</button>
+    <br>
+    <br>
+    <label>Date of Birth:<input
+            type="date"
+            id="dob"
+            name="dob"
+            required
+            max=""
+        />
+    </label>
+    <br>
+    <br>
+    <li>
+        <label>Health Notes: <br>
+            <textarea id="health-notes" rows="4" cols="40" placeholder="Enter any health notes here (free text)"></textarea>
+        </label>
+    </li>
+    <br>
+    <br>
+    <li>
+        <label>Weight (kg): <input type="number" id="weight" min="0" step="0.1" placeholder="e.g. 70.5"></label>
+    </li>
+    <li>
+        <label>Height (cm): <input type="number" id="height" min="0" step="0.1" placeholder="e.g. 175"></label>
+    </li>
+    <li>
+        <button type="button" id="calc-bmi">Calculate BMI</button>
+    </li>
+    <li>
+        <label>BMI:
+            <input type="text" id="bmi-display" readonly aria-live="polite" placeholder="BMI will appear here">
+        </label>
+    </li>
+    <li>
+        <label>BMI Category:
+            <input type="text" id="bmi-category" readonly placeholder="Category will appear here">
+        </label>
+    </li>
+    <button id="submit">Submit Details</button>
+</ul>
+</body>
+</html>
