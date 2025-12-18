@@ -1,4 +1,5 @@
-const testPatients = [
+// Sample patient data for testing search functionality
+  const testPatients = [
     { firstName: "John", lastName: "Doe", phoneNumber: "07123456789", email: "john.doe@example.com", birthDate: "01/02/1985", weight: 80, height: 180, bmiCategory: "Normal (18.5-24.9)" },
     { firstName: "Jane", lastName: "Smith", phoneNumber: "07987654321", email: "jane.smith@sky.co.uk", birthDate: "01/02/1990", weight: 65, height: 165, bmiCategory: "Normal (18.5-24.9)" },
     { firstName: "Alice", lastName: "Johnson", phoneNumber: "07456789012", email: "alice.johnson@bt.co.uk", birthDate: "01/02/1975", weight: 70, height: 170, bmiCategory: "Normal (18.5-24.9)" },
@@ -8,6 +9,9 @@ const testPatients = [
     { firstName: "Sarah", lastName: "Moore", phoneNumber: "07678901234", email: "sarahmoore1@bt.co.uk", birthDate: "01/02/1988", weight: 90, height: 160, bmiCategory: "Obese (>=30)" },
     { firstName: "David", lastName: "Taylor", phoneNumber: "07789012345", email: "david.taylor@bt.co.uk", birthDate: "01/02/1992", weight: 100, height: 190, bmiCategory: "Overweight (25-29.9)" },
     ];
+
+    console.log("Test Patients:", testPatients);
+
 // Contact class with validation
 class Contact {
   constructor(firstName, lastName, phoneNumber, email, birthDate, height, weight, healthNotes) {
@@ -178,7 +182,7 @@ if (submit) {
   submit.addEventListener('click', (e) => {
   e.preventDefault();
 
-// Collect Patient Details from the form
+  // Collect Patient Details from the form
   const first = (document.getElementById('fname') || {}).value || '';
   const last = (document.getElementById('lname') || {}).value || '';
   const phone = (document.getElementById('number') || {}).value || '';
@@ -186,6 +190,9 @@ if (submit) {
   const healthNotes = (document.getElementById('health-notes') || {}).value || '';
   const weightVal = (document.getElementById('weight') || {}).value || '';
   const heightVal = (document.getElementById('height') || {}).value || '';
+
+  // Generate UUID for patient record
+  const generatedId = crypto.randomUUID();
 
   // Collect all email inputs on the page (support multiple added emails)
   const emailEls = Array.from(document.querySelectorAll('input[type="email"]'));
@@ -214,8 +221,12 @@ if (submit) {
     if (Contact.validateHeight) Contact.validateHeight(parsedHeight);
     if (parsedWeight < 1 || parsedWeight > 200) throw new Error('Weight must be between 1 and 200 kg');
 
-    // Prepare patient object
-    const patient = {
+  // Calculate BMI and category
+  const bmiValue = calculateBMI(parsedWeight, parsedHeight);
+  const bmiCategory = getBMICategory(bmiValue);
+  // Prepare patient object
+  const patient = {
+      id: generatedId,
       firstName: validFirst,
       lastName: validLast,
       phone,
@@ -227,17 +238,23 @@ if (submit) {
       bmiCategory,
       healthNotes
     };
+    // Store test patients in localStorage for search functionality
+    let patients = JSON.parse(localStorage.getItem('patients') || '[]');
+    patients.push(patient);
+    localStorage.setItem('patients', JSON.stringify(patients));
+
     console.log('Submitted patient details:', patient);
+    alert("Submission successful!");
     // Indicate success in console
     console.info('Contact submission successful.');
   } catch (err) {
     console.error('Contact submission failed:', err && err.message ? err.message : err);
+    alert("Contact submission invalid: " + (err && err.message ? err.message : err) );
   }
   });
   } else {
   console.warn('Submit button not found; submit handler not attached.');
 } 
-
 // BMI calculation helper (weight in kg, height in cm)
 function calculateBMI(weightKg, heightCm) {
   const w = Number(weightKg);
@@ -281,65 +298,87 @@ if (calcBtn && bmiDisplay) {
   });
 }
 // Calculate BMI and category (re-using functions already on the page)
-    let bmiValue = null;
-    let bmiCategory = '';
-    try {
-      bmiValue = calculateBMI(parsedWeight, parsedHeight);
-      bmiCategory = typeof getBMICategory === 'function' ? getBMICategory(bmiValue) : '';
-    } catch (innerErr) {
-      // ignore bmi calculation error here; we'll still log other details
-      bmiValue = null;
-      bmiCategory = '';
-    }
+     let bmiValue = null;
+     let bmiCategory = '';
+     try {
+       bmiValue = calculateBMI(parsedWeight, parsedHeight);
+       bmiCategory = typeof getBMICategory === 'function' ? getBMICategory(bmiValue) : '';
+     } catch (innerErr) {
+       // ignore bmi calculation error here; we'll still log other details
+       bmiValue = null;
+       bmiCategory = '';
+     }
 // Calculate age
 function calculateAge(birthYear) {
   const currentYear = new Date().getFullYear();
   return currentYear - birthYear;
 }
-// Search and display patient
+  function calculateAge(birthDate) {
+  const today = new Date();
+  const dob = new Date(birthDate);
+
+  let age = today.getFullYear() - dob.getFullYear();
+
+  const hasHadBirthdayThisYear =
+    today.getMonth() > dob.getMonth() ||
+    (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+
+  if (!hasHadBirthdayThisYear) {
+    age -= 1;
+  }
+
+  return age;
+  } ; 
+
+// Search functionality
 document.getElementById("searchBtn").addEventListener("click", () => {
   const name = document.getElementById("searchInput").value.trim().toLowerCase();
   const resultDiv = document.getElementById("result");
 
-  const patient = patients.find(p => p.name.toLowerCase() === name);
+// Load saved patients + test patients
+  const savedPatients = JSON.parse(localStorage.getItem("patients")) || [];
+  const patients = [...testPatients, ...savedPatients];
+
+  const patient = patients.find(p => {
+    const phone = p.phone ?? p.phoneNumber;
+    const email = Array.isArray(p.emails) ? p.emails.join(", ") : p.email;
+    const weight = p.weightKg ?? p.weight;
+    const height = p.heightCm ?? p.height;
+
+    return (
+      `${p.firstName}; ${p.lastName}; ${phone}; ${email}; ${p.birthDate}; ${weight}; ${height}; ${p.bmiCategory}; ${p.healthNotes ?? ""}`
+        .toLowerCase()
+        .includes(name)
+    );
+  });
+
+  resultDiv.style.display = "block";
 
   if (!patient) {
-    resultDiv.innerHTML = `<p style="color:red;">Patient not found.</p>`;
+    resultDiv.innerHTML = `<p>No patient found.</p>`;
     return;
   }
 
-  const age = calculateAge(patient.birthYear);
-  const bmi = calculateBMI(patient.weight, patient.height);
-  const category = bmiCategory(bmi);
+  // Normalise fields for display
+  const phone = patient.phone ?? patient.phoneNumber;
+  const email = Array.isArray(patient.emails) ? patient.emails.join(", ") : patient.email;
+  const weight = patient.weightKg ?? patient.weight;
+  const height = patient.heightCm ?? patient.height;
+
+  let bmi;
+  try {
+    bmi = calculateBMI(weight, height);
+  } catch {
+    bmi = "N/A";
+  }
 
   resultDiv.innerHTML = `
     <h3>Patient Details</h3>
-    <p><strong>Name:</strong> ${patient.name}</p>
-    <p><strong>Age:</strong> ${age}</p>
+    <input type="hidden" id="patient-id" value="${patient.id}">
+    <p><strong>Name:</strong> ${patient.firstName} ${patient.lastName}</p>
+    <p><strong>Age:</strong> ${calculateAge(patient.birthDate)}</p>
     <p><strong>BMI:</strong> ${bmi}</p>
-    <p><strong>Category:</strong> ${category}</p>
+    <p><strong>BMI Category:</strong> ${patient.bmiCategory}</p>
   `;
 });
-// Display all patients with Name, Age, BMI & Category 
-function displayPatients(patients) {
-  const container = document.getElementById("patientList");
-  container.innerHTML = "";
-
-  patients.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "patient-card";
-
-    card.innerHTML = `
-      <h3>${p.firstName} ${p.lastName}</h3>
-      <p><strong>Age:</strong> ${p.age}</p>
-      <p><strong>BMI:</strong> ${p.bmi}</p>
-      <p><strong>Category:</strong> ${p.bmiCategory}</p>
-      <p><strong>Phone:</strong> ${p.phoneNumber}</p>
-      <p><strong>Email:</strong> ${p.email}</p>
-      <p><strong>Notes:</strong> ${p.healthNotes}</p>
-    `;
-
-    container.appendChild(card);
-  });
-}
 

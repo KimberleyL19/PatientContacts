@@ -165,6 +165,41 @@ button.secondary {
     margin-top: 40px;
     border-radius: 10px 10px 0 0;
 }
+/* Results box on the right */
+#result {
+    display: none;
+}
+
+#result {
+  background-color: #d8f5e3;
+  border: 1px solid #8ac9a3;
+  color: #0f2f1f;
+  padding: 20px;
+  margin-top: 80px;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-family: "Segoe UI", Arial, sans-serif;
+  text-align: left;
+  margin-top: 20px; 
+}
+
+#result h3 {
+  color: #0f4d2e;
+  margin-bottom: 12px;
+}
+
+#result p strong {
+  color: #0f4d2e;
+}
+.center-wrapper {
+  display: flex;
+  justify-content: center;     /* centre horizontally */
+  align-items: center;     /* start near the top */
+  min-height: 10vh;            /* take up most of the screen */
+  padding-top: 60px;           /* push the box higher */
+}
+
 
 
 
