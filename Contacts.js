@@ -537,3 +537,57 @@ document.addEventListener("click", function (e) {
   }
 });
 
+// Generate statistics from patient data
+function generateStats() {
+  
+const savedPatients = JSON.parse(localStorage.getItem("patients") || "[]");
+    const patients = [...seededTestPatients, ...savedPatients];
+  
+    const sexGroups = {};
+    const bmiCategoryCounts = {};
+    let totalFemales50Plus = 0;
+    
+    for (const raw of patients) {
+      const n = normalisePatient(raw);
+    }
+    
+// Calculate BMI and category (skip if invalid numbers)
+      let bmi;
+      const category = getBMICategory(bmi);
+
+      const genderKey = (n.gender || "unknown").toString().toLowerCase();
+      if (!sexGroups[genderKey]) sexGroups[genderKey] = { totalBMI: 0, count: 0 };
+      sexGroups[genderKey].totalBMI += bmi;
+      sexGroups[genderKey].count += 1;
+
+      bmiCategoryCounts[category] = (bmiCategoryCounts[category] || 0) + 1;
+
+      const age = calculateAge(n.birthDate);
+      if (genderKey === "female" && typeof age === "number" && age >= 50) {
+        totalFemales50Plus += 1;
+      }
+    }
+
+    const averageBMIBySex = {};
+    for (const g in sexGroups) {
+      averageBMIBySex[g] = Number((sexGroups[g].totalBMI / sexGroups[g].count).toFixed(1));
+    }
+
+    return {
+      averageBMIBySex,
+      bmiCategoryCounts,
+      totalPatients: patients.length,
+      totalFemales50Plus
+    };
+  
+
+  function goToStatistics() {
+    const stats = generateStats();
+    localStorage.setItem("patientStats", JSON.stringify(stats));
+    window.location.href = "statistics.html";
+  }
+
+  // Expose goToStatistics if you call it from HTML (e.g., onclick)
+  window.goToStatistics = goToStatistics;
+
+
